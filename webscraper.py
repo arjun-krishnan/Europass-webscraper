@@ -10,7 +10,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from tqdm import tqdm
 import time
 import json
@@ -26,7 +25,6 @@ driver = webdriver.Chrome(
     options=options
 )
 
-actions = ActionChains(driver)
 
 # set the window size to make sure pages
 # will not be rendered in responsive mode
@@ -48,14 +46,11 @@ keywords = ["data science","physics","science","scientist","machine learning","d
 job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
 
 jobs = []
-job_details = {}
 
 positive = 0
-N_pages = 5
+N_pages = 2
 for i,page in enumerate(tqdm(range(N_pages))):
-    time.sleep(2)
-    scroll_to = driver.find_element(By.ID,"edit-block-title")
-    
+    time.sleep(2)    
     job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
     for job in job_cards:
         try:
@@ -65,6 +60,7 @@ for i,page in enumerate(tqdm(range(N_pages))):
             description_text = description_ele.text
 
             if (any(word.lower() in description_text.lower() for word in keywords)):
+                job_details = {}
                 positive += 1
                 print(str(positive)+" : "+title_text+"\n")
                 job_details["Title"] = title_text.strip()
@@ -74,19 +70,19 @@ for i,page in enumerate(tqdm(range(N_pages))):
                 job_details["Link"] = str(link[1].get_attribute("href")).split('?')[0]
                 jobs.append(job_details)
         except:
-            print("something wrong")
+            print("something wrong here! Unable to fetch data!")
             pass
     try:
         nextpage_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
         nextpage_button.click()
     except:
-        print("something wrong in next")
+        print("something wrong while clicking next")
         break
 
 with open('results/positive_results.json', 'w', encoding='utf-8') as f:
     json.dump(jobs, f, ensure_ascii=False, indent=4)
     
-print("Found ",positive," jobs with matching keywords in ",N_pages," pages!")
+print("\n Found ",positive," jobs with matching keywords in ",N_pages," pages!")
     
 # close the browser and free up the resources
 time.sleep(2)
