@@ -83,11 +83,7 @@ for page in tqdm(range(N_pages)):
             print("something wrong")
             pass
     try:
-
-        #nextpage_button = driver.find_element(By.LINK_TEXT,"Next")
-        #nextpage_button = driver.find_element_by_link_text("Next")
         nextpage_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
-        #print(nextpage_button.get_attribute("href"))
         nextpage_button.click()
     except:
         print("something wrong in next")
