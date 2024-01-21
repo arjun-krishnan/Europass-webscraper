@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from tqdm import tqdm
 import time
+import json
 
 #%%
 # set up a controllable Chrome instance
@@ -49,12 +50,9 @@ job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
 jobs = []
 job_details = {}
 
-titles = []
-description = []
-links = []
-
+positive = 0
 N_pages = 5
-for page in tqdm(range(N_pages)):
+for i,page in enumerate(tqdm(range(N_pages))):
     time.sleep(2)
     scroll_to = driver.find_element(By.ID,"edit-block-title")
     
@@ -63,21 +61,17 @@ for page in tqdm(range(N_pages)):
         try:
             title_ele  = job.find_element(By.CSS_SELECTOR,".jobs--title")
             title_text = title_ele.text
-            #print(title_text)
             description_ele = job.find_element(By.CSS_SELECTOR,".node-content") #.find_element(By.CSS_SELECTOR,".field-item__description jsDescription collapsed")
             description_text = description_ele.text
-            #print(description_ele.text)
-            #titles.append(title_text)
+
             if (any(word.lower() in description_text.lower() for word in keywords)):
-                titles.append(title_text.strip())
+                positive += 1
+                print(str(positive)+" : "+title_text+"\n")
                 job_details["Title"] = title_text.strip()
-                description.append(description_text.strip())
-                job_details["Description"] = description_text.strip()
-                
+                job_details["Description"] = description_text.strip()               
                 link_button = job.find_element(By.CSS_SELECTOR,".boxButtonslist")
                 link = link_button.find_elements(By.TAG_NAME,'a')
-                links.append(str(link[1].get_attribute("href")).split('?')[0])
-                job_details["Link"] = links[-1]
+                job_details["Link"] = str(link[1].get_attribute("href")).split('?')[0]
                 jobs.append(job_details)
         except:
             print("something wrong")
@@ -89,6 +83,10 @@ for page in tqdm(range(N_pages)):
         print("something wrong in next")
         break
 
+with open('results/positive_results.json', 'w', encoding='utf-8') as f:
+    json.dump(jobs, f, ensure_ascii=False, indent=4)
+    
+print("Found ",positive," jobs with matching keywords in ",N_pages," pages!")
     
 # close the browser and free up the resources
 time.sleep(2)
