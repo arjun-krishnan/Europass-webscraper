@@ -12,23 +12,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from tqdm import tqdm
 import time
-import json
+import json, csv
 
 #%%
 # set up a controllable Chrome instance
 # in headless mode
 service = Service()
 options = webdriver.ChromeOptions()
-#options.add_argument("--headless=new")
+#options.add_argument("--headless=new")     # uncomment to do the scraping without displaying the window
 driver = webdriver.Chrome(
     service=service,
     options=options
 )
 
-
-# set the window size to make sure pages
-# will not be rendered in responsive mode
-#driver.set_window_size(1920, 1080)
 
 # open the target page  in the browser
 driver.get("https://europa.eu/europass/en/find-jobs?keyword=data&location=Germany&order=relevance&form_build_id=form-Kwm_IYWWCd_v29y--AcXtfd0Bra0I9e3xI-WTJz1K7I&form_id=jobs_search")
@@ -48,7 +44,7 @@ job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
 jobs = []
 
 positive = 0
-N_pages = 2
+N_pages = 10
 for i,page in enumerate(tqdm(range(N_pages))):
     time.sleep(2)    
     job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
@@ -81,7 +77,14 @@ for i,page in enumerate(tqdm(range(N_pages))):
 
 with open('results/positive_results.json', 'w', encoding='utf-8') as f:
     json.dump(jobs, f, ensure_ascii=False, indent=4)
-    
+
+with open('results/positive_results.csv', 'w', newline='') as file:
+      csv_writer = csv.writer(file)
+      csv_writer.writerow(["Title", "URL"])
+      
+      for job in jobs:
+          csv_writer.writerow([job["Title"],f'=HYPERLINK("{job["Link"]}","{job["Link"]}")'])
+          
 print("\n Found ",positive," jobs with matching keywords in ",N_pages," pages!")
     
 # close the browser and free up the resources
