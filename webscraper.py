@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jan 19 14:21:56 2024
+Created on Mon Jan 22 15:14:01 2024
 
+Web scraping script using Selenium to find job listings on Europa website.
 @author: arjun
 """
 
@@ -12,81 +13,82 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from tqdm import tqdm
 import time
-import json, csv
+import json
+import csv
 
-#%%
-# set up a controllable Chrome instance
-# in headless mode
+# Set up a controllable Chrome instance in headless mode
 service = Service()
 options = webdriver.ChromeOptions()
-#options.add_argument("--headless=new")     # uncomment to do the scraping without displaying the window
-driver = webdriver.Chrome(
-    service=service,
-    options=options
-)
+# options.add_argument("--headless=new")  # Uncomment to run in headless mode
+driver = webdriver.Chrome(service=service, options=options)
 
-
-# open the target page  in the browser
+# Open the target page in the browser
 driver.get("https://europa.eu/europass/en/find-jobs?keyword=data&location=Germany&order=relevance&form_build_id=form-Kwm_IYWWCd_v29y--AcXtfd0Bra0I9e3xI-WTJz1K7I&form_id=jobs_search")
-#driver.get("https://europa.eu/europass/en/find-jobs?keyword=physics&location=Germany&order=relevance&form_build_id=form-zOoMCg_qOYhO62ptpWArlEdRosmGYl1w2prOh_JGUSQ&form_id=jobs_search")
 time.sleep(2)
 
-cookies = driver.find_element(By.LINK_TEXT,"Accept only essential cookies")
+# Accept cookies
+cookies = driver.find_element(By.LINK_TEXT, "Accept only essential cookies")
 cookies.click()
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH,"//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
+WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
 
+# Keywords for job filtering
+keywords = ["data science", "physics", "science", "scientist", "machine learning", "deep learning"]
 
-keywords = ["data science","physics","science","scientist","machine learning","deep learning"]
-# scraping logic...
-
-job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
-
+# Scraping logic...
+job_cards = driver.find_elements(By.CSS_SELECTOR, ".row")
 jobs = []
-
 positive = 0
 N_pages = 10
-for i,page in enumerate(tqdm(range(N_pages))):
-    time.sleep(2)    
-    job_cards = driver.find_elements(By.CSS_SELECTOR,".row")
+
+for i, page in enumerate(tqdm(range(N_pages))):
+    time.sleep(2)
+    job_cards = driver.find_elements(By.CSS_SELECTOR, ".row")
+    
     for job in job_cards:
         try:
-            title_ele  = job.find_element(By.CSS_SELECTOR,".jobs--title")
+            # Extract job details
+            title_ele = job.find_element(By.CSS_SELECTOR, ".jobs--title")
             title_text = title_ele.text
-            description_ele = job.find_element(By.CSS_SELECTOR,".node-content") #.find_element(By.CSS_SELECTOR,".field-item__description jsDescription collapsed")
+            description_ele = job.find_element(By.CSS_SELECTOR, ".node-content")
             description_text = description_ele.text
 
-            if (any(word.lower() in description_text.lower() for word in keywords)):
-                job_details = {}
-                positive += 1
-                print(str(positive)+" : "+title_text+"\n")
-                job_details["Title"] = title_text.strip()
-                job_details["Description"] = description_text.strip()               
-                link_button = job.find_element(By.CSS_SELECTOR,".boxButtonslist")
-                link = link_button.find_elements(By.TAG_NAME,'a')
-                job_details["Link"] = str(link[1].get_attribute("href")).split('?')[0]
+            # Check if job description contains any of the keywords
+            if any(word.lower() in description_text.lower() for word in keywords):
+                job_details = {
+                    "Title": title_text.strip(),
+                    "Description": description_text.strip(),
+                    "Link": str(job.find_element(By.CSS_SELECTOR, ".boxButtonslist a:nth-child(2)").get_attribute("href")).split('?')[0]
+                }
                 jobs.append(job_details)
-        except:
-            print("something wrong here! Unable to fetch data!")
+                positive += 1
+                print(str(positive) + " : " + title_text + "\n")
+
+        except Exception as e:
+            print(f"Something went wrong while fetching data: {e}")
             pass
+    
     try:
+        # Navigate to the next page
         nextpage_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
         nextpage_button.click()
-    except:
-        print("something wrong while clicking next")
+    except Exception as e:
+        print(f"Something went wrong while clicking next: {e}")
         break
 
+# Save results in JSON file
 with open('results/positive_results.json', 'w', encoding='utf-8') as f:
     json.dump(jobs, f, ensure_ascii=False, indent=4)
 
+# Save results in CSV file
 with open('results/positive_results.csv', 'w', newline='') as file:
-      csv_writer = csv.writer(file)
-      csv_writer.writerow(["Title", "URL"])
-      
-      for job in jobs:
-          csv_writer.writerow([job["Title"],f'=HYPERLINK("{job["Link"]}","{job["Link"]}")'])
-          
-print("\n Found ",positive," jobs with matching keywords in ",N_pages," pages!")
+    csv_writer = csv.writer(file)
+    csv_writer.writerow(["Title", "URL"])
     
-# close the browser and free up the resources
+    for job in jobs:
+        csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","{job["Link"]}")'])
+
+print(f"\nFound {positive} jobs with matching keywords in {N_pages} pages!")
+
+# Close the browser and free up resources
 time.sleep(2)
 driver.quit()
