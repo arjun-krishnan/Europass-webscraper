@@ -19,11 +19,12 @@ import csv
 # Set up a controllable Chrome instance in headless mode
 service = Service()
 options = webdriver.ChromeOptions()
-# options.add_argument("--headless=new")  # Uncomment to run in headless mode
+#options.add_argument("--headless=new")  # Uncomment to run in headless mode / without displaying the browser window
 driver = webdriver.Chrome(service=service, options=options)
 
 # Open the target page in the browser
-driver.get("https://europa.eu/europass/en/find-jobs?keyword=data&location=Germany&order=relevance&form_build_id=form-Kwm_IYWWCd_v29y--AcXtfd0Bra0I9e3xI-WTJz1K7I&form_id=jobs_search")
+#driver.get("https://europa.eu/europass/en/find-jobs?keyword=data&location=Germany&order=relevance&form_build_id=form-Kwm_IYWWCd_v29y--AcXtfd0Bra0I9e3xI-WTJz1K7I&form_id=jobs_search")
+driver.get("https://europa.eu/europass/en/find-jobs")
 time.sleep(2)
 
 # Accept cookies
@@ -31,14 +32,23 @@ cookies = driver.find_element(By.LINK_TEXT, "Accept only essential cookies")
 cookies.click()
 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
 
+search_keyword = "Scientist"    # The keyword to search for jobs
+search_location = "Germany"     # Preferred location of the job
+
+driver.find_element(By.XPATH,"//*[@id='edit-keyword']").send_keys(search_keyword)
+driver.find_element(By.XPATH,"//*[@id='edit-location']").send_keys(search_location)
+driver.find_element(By.CSS_SELECTOR,".search-submit").click()
+time.sleep(2)
+driver.find_element(By.CSS_SELECTOR,".search-submit").click()
+
 # Keywords for job filtering
-keywords = ["data science", "physics", "science", "scientist", "machine learning", "deep learning"]
+keywords = ["data science", "physics", "science", "scientist", "machine learning", "deep learning","english"]
 
 # Scraping logic...
 job_cards = driver.find_elements(By.CSS_SELECTOR, ".row")
 jobs = []
 positive = 0
-N_pages = 10
+N_pages = 5
 
 for i, page in enumerate(tqdm(range(N_pages))):
     time.sleep(2)
