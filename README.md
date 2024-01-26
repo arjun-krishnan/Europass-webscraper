@@ -1,6 +1,6 @@
 # Europass Webscraper
 
-This Python script utilizes Selenium to scrape job listings from the Europa website based on specified keywords. The script then filters the jobs and saves positive results in both JSON and CSV formats.
+This Python script utilizes Selenium to scrape job listings from the Europass website based on specified keywords. The script then filters the jobs and saves positive results in both JSON and CSV formats.
 
 ## Prerequisites
 
