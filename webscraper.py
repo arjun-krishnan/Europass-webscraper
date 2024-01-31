@@ -15,7 +15,10 @@ from tqdm import tqdm
 import time
 import json
 import csv
+import os
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 
 # Set up a controllable Chrome instance in headless mode
 service = Service()
@@ -33,7 +36,7 @@ cookies = driver.find_element(By.LINK_TEXT, "Accept only essential cookies")
 cookies.click()
 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
 
-search_keyword = "physicist"    # The keyword to search for jobs
+search_keyword = "data science, physics"    # The keyword to search for jobs
 search_location = "sweden"     # Preferred location of the job
 
 driver.find_element(By.XPATH,"//*[@id='edit-keyword']").send_keys(search_keyword)
