@@ -7,16 +7,17 @@ This Python script utilizes Selenium to scrape job listings from the Europass we
 Before running the script, make sure to install the required dependencies:
 
 ```bash
-pip install selenium tqdm
+pip install selenium tqdm langdetect
 ```
 
 ## Configuration
 Adjust the following parameters in the script according to your requirements:
 
 - options.add_argument("--headless=new"): Uncomment to run in headless mode (without displaying the browser window).
-- search_keywords: Main keyword to start the search.
+- search_keywords: Main keywords to start the search.
 - search_location: Preferred location of the jobs.  
 - keywords: Modify the list of keywords for job filtering.
+- languages: Filter the job ads by this list of languages.
 - N_pages: Set the number of pages to scrape.
 
 
