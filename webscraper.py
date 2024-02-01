@@ -6,6 +6,7 @@ Web scraping script using Selenium to find job listings on Europa website.
 @author: arjun
 """
 
+from langdetect import detect
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -37,7 +38,7 @@ cookies.click()
 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
 
 search_keyword = "data science, physics"    # The keyword to search for jobs
-search_location = "sweden"     # Preferred location of the job
+search_location = "germany"     # Preferred location of the job
 
 driver.find_element(By.XPATH,"//*[@id='edit-keyword']").send_keys(search_keyword)
 driver.find_element(By.XPATH,"//*[@id='edit-location']").send_keys(search_location)
@@ -47,12 +48,14 @@ driver.find_element(By.CSS_SELECTOR,".search-submit").click()
 
 # Keywords for job filtering
 keywords = ["data science", "physics", "science", "scientist", "machine learning", "deep learning", "english", "international"]
+# Languages for filtering
+languages = ["en"]      # List here the languages of the advertisement you are interested in. Please see the documentation https://pypi.org/project/langdetect/ for abbreviations
 
 # Scraping logic...
 job_cards = driver.find_elements(By.CSS_SELECTOR, ".row")
 jobs = []
 positive = 0
-N_pages = 10
+N_pages = 5
 
 for i, page in enumerate(tqdm(range(N_pages))):
     time.sleep(2)
@@ -67,7 +70,7 @@ for i, page in enumerate(tqdm(range(N_pages))):
             description_text = description_ele.text
 
             # Check if job description contains any of the keywords
-            if any(word.lower() in description_text.lower() for word in keywords):
+            if any(word.lower() in description_text.lower() for word in keywords) and detect(description_text) in languages:
                 job_details = {
                     "Title": title_text.strip(),
                     "Description": description_text.strip(),
