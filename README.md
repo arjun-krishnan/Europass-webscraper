@@ -16,7 +16,9 @@ Adjust the following parameters in the script according to your requirements:
 - options.add_argument("--headless=new"): Uncomment to run in headless mode (without displaying the browser window).
 - search_keywords: Main keywords to start the search.
 - search_location: Preferred location of the jobs.  
-- keywords: Modify the list of keywords for job filtering.
+- keywords: Results are shown positive if any of the word in this list is present in the job description.
+- excluded_keywords: Exclude the results if any of the word in this list is present in the job title.
+  - Eg. for entry level jobs, exclude words like 'senior', 'head' etc. 
 - languages: Filter the job ads by this list of languages.
 - N_pages: Set the number of pages to scrape.
 
