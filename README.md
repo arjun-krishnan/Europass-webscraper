@@ -26,5 +26,5 @@ Adjust the following parameters in the script according to your requirements:
 ## Output
 The script saves positive results in the results directory:
 
-- positive_results.json: JSON file with job details.
+- positive_results.json: JSON file with job details and URLs.
 - positive_results.csv: CSV file with job titles and hyperlinked URLs.
