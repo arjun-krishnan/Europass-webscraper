@@ -60,8 +60,12 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
                 description_ele = job.find_element(By.CSS_SELECTOR, ".node-content")
                 description_text = description_ele.text
 
-                # Check if job description contains any of the keywords
-                if any(word.lower() in description_text.lower() for word in keywords) and all(word.lower() not in title_text.lower() for word in excluded_keywords) and detect(description_text) in languages:
+                # Check if job description matches your criteria
+                keywords_True = any(word.lower() in description_text.lower() for word in keywords)
+                excluded_True = all(word.lower() not in title_text.lower() for word in excluded_keywords)
+                language_True = detect(description_text) in languages
+
+                if keywords_True and excluded_True and language_True:
                     job_details = {
                         "Title": title_text.strip(),
                         "Description": description_text.strip(),
