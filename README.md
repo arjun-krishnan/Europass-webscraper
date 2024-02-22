@@ -4,6 +4,8 @@ This Python script utilizes Selenium to scrape job listings from the Europass we
 
 ## Prerequisites
 
+The program uses Google Chrome to navigate through the website. So you must have Python and Google Chrome installed.
+
 Before running the script, make sure to install the required dependencies:
 
 ```bash
