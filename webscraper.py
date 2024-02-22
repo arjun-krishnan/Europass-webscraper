@@ -95,7 +95,7 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
     # Close the browser and free up resources
     driver.quit()
 
-    return
+    return jobs
 
 
 def save_results(filename, jobs):
