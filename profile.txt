@@ -1,0 +1,3 @@
+level : "Entry-level"
+skills : "Python, Deep learning, Machine learning, Computer vision, Matlab, physics informed modelling, accelerator physics"
+languages : "English (Advanced)"
