@@ -45,12 +45,17 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
 
     driver.find_element(By.XPATH,"//*[@id='edit-keyword']").send_keys(search_keyword)
     driver.find_element(By.XPATH,"//*[@id='edit-location']").send_keys(search_location)
-    driver.find_element(By.CSS_SELECTOR,".search-submit").click()
-    time.sleep(5)
-    driver.find_element(By.CSS_SELECTOR,".search-submit").click()
+
+    while True:
+        driver.find_element(By.CSS_SELECTOR,".search-submit").click()
+        try:
+            WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".jobs--title")))
+            break
+        except:
+            continue
 
     jobs = []
-    positive = 0
+    positive, good_match = 0, 0
 
     for i_page, page in enumerate(tqdm(range(N_pages))):
         time.sleep(2)
@@ -70,18 +75,29 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
                 language_True = detect(description_text) in languages
 
                 if keywords_True and excluded_True and language_True:
-                    if search_mode == 'gemini':
-                        match = profile_match(description_text, profile)
-                        if not match:
-                            continue
                     job_details = {
                         "Title": title_text.strip(),
                         "Description": description_text.strip(),
-                        "Link": str(job.find_element(By.CSS_SELECTOR, ".boxButtonslist a:nth-child(2)").get_attribute("href")).split('?')[0]
+                        "Link":
+                            str(job.find_element(By.CSS_SELECTOR, ".boxButtonslist a:nth-child(2)").get_attribute("href")).split('?')[0]
                     }
-                    jobs.append(job_details)
                     positive += 1
-                    print(str(positive) + " : " + title_text + "\n")
+
+                    if search_mode == 'gemini':
+                        results, match = profile_match(description_text, profile)
+                        job_details.update({
+                            "Job-level match": results[0],
+                            "Skills match": results[1],
+                            "Good match": match
+                        })
+                        if match:
+                            good_match += 1
+                        print(f"\n{positive}: {title_text}\nJob-level match: {results[0]}\t Skills match: {results[1]}")
+
+                    jobs.append(job_details)
+
+                    if search_mode == 'basic':
+                        print(f"\n{positive}: {title_text}")
 
             except Exception as e:
                 print(f"Something went wrong while fetching data: {e}")
@@ -89,7 +105,7 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
 
         try:
             # Navigate to the next page
-            nextpage_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
+            nextpage_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
             nextpage_button.click()
         except Exception as e:
             print(f"Something went wrong while clicking next: {e}")
@@ -98,8 +114,10 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
     filename = f"{search_location}_{search_keyword}_results"
     save_results(filename, jobs)
 
-    print(f"\nFound {positive} jobs with matching keywords in {i_page+1} pages!")
-
+    if search_mode == 'basic':
+        print(f"\nFound {positive} jobs with matching keywords in {i_page+1} pages!")
+    else:
+        print(f"\nFound {positive} jobs with matching keywords with {good_match} good matches in {i_page + 1} pages!")
     # Close the browser and free up resources
     driver.quit()
 
@@ -125,9 +143,14 @@ def save_results(filename, jobs):
     # Save results in CSV file
     with open(f"results/{filename}.csv", 'w', newline='', encoding='utf-8') as file:
         csv_writer = csv.writer(file)
-        csv_writer.writerow(["Title", "URL"])
 
-        for job in jobs:
-            csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","Link")'])
+        if search_mode == 'gemini':
+            csv_writer.writerow(["Title", "Job-level match", "Skills match", "Good match", "URL"])
+            for job in jobs:
+                csv_writer.writerow([job["Title"], job["Job-level match"], job["Skills match"], job["Good match"], f'=HYPERLINK("{job["Link"]}","Link")'])
+        else:
+            csv_writer.writerow(["Title", "URL"])
+            for job in jobs:
+                csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","Link")'])
 
     return
