@@ -49,7 +49,7 @@ languages = ["en"]                      # List here the languages of the adverti
                                         # See the documentation https://pypi.org/project/langdetect/ for abbreviations
 N_pages = 1   # No.of pages to scrape through
 
-jobs = search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages, N_pages, show_window=True)
+jobs = search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages, N_pages, show_window=True, search_mode='gemini')
 ```
 
 ## Output
