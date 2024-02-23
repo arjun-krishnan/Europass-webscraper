@@ -112,7 +112,7 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
             break
 
     filename = f"{search_location}_{search_keyword}_results"
-    save_results(filename, jobs)
+    save_results(filename, jobs, search_mode)
 
     if search_mode == 'basic':
         print(f"\nFound {positive} jobs with matching keywords in {i_page+1} pages!")
@@ -124,7 +124,7 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
     return jobs
 
 
-def save_results(filename, jobs):
+def save_results(filename, jobs, mode=None):
     # Check if the file exists
     if os.path.exists(f"results/{filename}.json") or os.path.exists(f"{filename}.csv"):
         # If the file exists, find a unique filename by appending a suffix
@@ -144,7 +144,7 @@ def save_results(filename, jobs):
     with open(f"results/{filename}.csv", 'w', newline='', encoding='utf-8') as file:
         csv_writer = csv.writer(file)
 
-        if search_mode == 'gemini':
+        if mode == 'gemini':
             csv_writer.writerow(["Title", "Job-level match", "Skills match", "Good match", "URL"])
             for job in jobs:
                 csv_writer.writerow([job["Title"], job["Job-level match"], job["Skills match"], job["Good match"], f'=HYPERLINK("{job["Link"]}","Link")'])
