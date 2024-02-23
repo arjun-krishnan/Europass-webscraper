@@ -12,6 +12,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import gemini_tests
+from gemini_tests import read_profile, profile_match
 from tqdm import tqdm
 import time
 import json
@@ -21,7 +23,9 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dir_path)
 
-def search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages=['en'], N_pages=10, show_window=False):
+profile = read_profile("profile.txt")
+
+def search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages=['en'], N_pages=10, show_window=False, search_mode='basic'):
 
     # Set up a controllable Chrome instance in headless mode
     service = Service()
@@ -66,6 +70,10 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
                 language_True = detect(description_text) in languages
 
                 if keywords_True and excluded_True and language_True:
+                    if search_mode == 'gemini':
+                        match = profile_match(description_text, profile)
+                        if not match:
+                            continue
                     job_details = {
                         "Title": title_text.strip(),
                         "Description": description_text.strip(),
@@ -120,6 +128,6 @@ def save_results(filename, jobs):
         csv_writer.writerow(["Title", "URL"])
 
         for job in jobs:
-            csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","{job["Link"]}")'])
+            csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","Link")'])
 
     return
