@@ -58,7 +58,7 @@ def profile_match(job, profile):
     #res3 = get_response(model,m_copies[2])
     
     results = [res1.lower(),res2.lower()] #,res3.lower()]
-    print(results)
+    #print(results)
     verdict = all('yes' in s for s in results) 
     
-    return(verdict)
+    return(results, verdict)
