@@ -120,6 +120,6 @@ def save_results(filename, jobs):
         csv_writer.writerow(["Title", "URL"])
 
         for job in jobs:
-            csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","{job["Link"]}")'])
+            csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}",""Link")'])
 
     return
