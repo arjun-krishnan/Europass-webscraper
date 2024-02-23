@@ -153,4 +153,5 @@ def save_results(filename, jobs, mode=None):
             for job in jobs:
                 csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","Link")'])
 
+
     return
