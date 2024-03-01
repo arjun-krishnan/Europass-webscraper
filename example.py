@@ -2,7 +2,7 @@
 from webscraper import search_jobs
 
 search_keyword = "deep learning, machine learning"      # The keyword to search for jobs
-search_location = "Luxembourg"                          # Preferred location of the jobs
+search_location = "Germany"                          # Preferred location of the jobs
 keywords = ["data science", "physics", "science", "scientist", "trainee", "machine learning", "deep learning"]  # Keywords for job filtering
 excluded_keywords = ["senior","head","Sr ","Sr."]   # Keywords to exclude in the job title.
 languages = ["en"]                      # List here the languages of the advertisement you are interested in.
