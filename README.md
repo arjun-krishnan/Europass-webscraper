@@ -11,7 +11,10 @@ Before running the script, make sure to install the required dependencies:
 ```bash
 pip install selenium tqdm langdetect
 ```
-
+If you want to use the Google Gemini API for intelligent job filtering, install:
+```bash
+pip install -U google-generativeai
+```
 ## Configuration
 
 To use WebScraper, simply import the **search_jobs** function from the **webscraper** module and pass the following arguments:
@@ -23,6 +26,15 @@ To use WebScraper, simply import the **search_jobs** function from the **webscra
 - **languages** : List of languages to filter job ads.
 - **N_pages** : Number of pages to scrape.
 - **show_window** : set to True if you want to see the Chrome window  during the scraping process.
+- **search_mode** : Flag to chose if you want to use the Google Gemini API to fliter the jobs according to your profile. The options are 'basic' and 'gemini'.
+
+## Using Gemini API
+
+- Save your Gemini API key as an environment variable **GEMINI_API_KEY**.
+- Get the API key from: https://ai.google.dev/ . It is free to use right now.
+- For users in Europe, the API access is not yet available. One work around is using a VPN.
+- Modify the *profile.txt* file in the directory to describe your desired job level, skills etc.
+- Don't change the formatting of the text file.
 
 Example usage:
 
@@ -37,11 +49,11 @@ languages = ["en"]                      # List here the languages of the adverti
                                         # See the documentation https://pypi.org/project/langdetect/ for abbreviations
 N_pages = 1   # No.of pages to scrape through
 
-jobs = search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages, N_pages, show_window=True)
+jobs = search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages, N_pages, show_window=True, search_mode='gemini')
 ```
 
 ## Output
 The script saves positive results in the results directory:
 
-- positive_results.json: JSON file with job details and URLs.
-- positive_results.csv: CSV file with job titles and hyperlinked URLs.
+- positive_results.json: JSON file with job details, URLs, and flags showing the suitability of the job with the user profile.
+- positive_results.csv: CSV file with job titles, hyperlinked URLs, and flags showing the suitability of the job with the user profile.
