@@ -5,9 +5,6 @@ Created on Thu Feb 22 17:43:47 2024
 @author: arjun
 """
 
-import pathlib
-import textwrap
-from time import time
 import os
 import google.generativeai as genai
 
