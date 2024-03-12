@@ -12,8 +12,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import gemini_tests
-from gemini_tests import read_profile, profile_match
+from gemini_gpt_functions import read_profile, profile_match
 from tqdm import tqdm
 import time
 import json
@@ -41,7 +40,7 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
     # Accept cookies
     cookies = driver.find_element(By.LINK_TEXT, "Accept only essential cookies")
     cookies.click()
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
+    #WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//*[@id='cookie-consent-banner']/div/div/div[2]/button"))).click()
 
     driver.find_element(By.XPATH,"//*[@id='edit-keyword']").send_keys(search_keyword)
     driver.find_element(By.XPATH,"//*[@id='edit-location']").send_keys(search_location)
@@ -83,8 +82,8 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
                     }
                     positive += 1
 
-                    if search_mode == 'gemini':
-                        results, match = profile_match(description_text, profile)
+                    if search_mode == 'gemini' or search_mode == 'openai':
+                        results, match = profile_match(description_text, profile, search_mode)
                         job_details.update({
                             "Job-level match": results[0],
                             "Skills match": results[1],
