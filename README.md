@@ -11,9 +11,10 @@ Before running the script, make sure to install the required dependencies:
 ```bash
 pip install selenium tqdm langdetect
 ```
-If you want to use the Google Gemini API for intelligent job filtering, install:
+If you want to use the Google Gemini API or OpenAI API for intelligent job filtering, install:
 ```bash
 pip install -U google-generativeai
+pip install openai
 ```
 ## Configuration
 
