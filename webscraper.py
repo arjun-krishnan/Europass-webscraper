@@ -14,6 +14,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from gemini_gpt_functions import read_profile, profile_match
 from tqdm import tqdm
+import numpy as np
 import time
 import json
 import csv
@@ -56,71 +57,77 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
     jobs = []
     positive, good_match = 0, 0
 
-    for i_page, page in enumerate(tqdm(range(N_pages))):
-        time.sleep(2)
-        job_cards = driver.find_elements(By.CSS_SELECTOR, ".row")
+    try:
+        for i_page, page in enumerate(tqdm(range(N_pages))):
+            time.sleep(2)
+            job_cards = driver.find_elements(By.CSS_SELECTOR, ".row")
 
-        for job in job_cards:
+            for job in job_cards:
+                try:
+                    # Extract job details
+                    title_ele = job.find_element(By.CSS_SELECTOR, ".jobs--title")
+                    title_text = title_ele.text
+                    description_ele = job.find_element(By.CSS_SELECTOR, ".node-content")
+                    description_text = description_ele.text
+
+                    # Check if job description matches your criteria
+                    keywords_match = [word.lower() in description_text.lower() for word in keywords]
+                    keywords_True = any(keywords_match)
+                    matched_keywords = list(np.array(keywords)[keywords_match])
+
+                    excluded_True = all(word.lower() not in title_text.lower() for word in excluded_keywords)
+                    language_True = detect(description_text) in languages
+
+                    if keywords_True and excluded_True and language_True:
+                        job_details = {
+                            "Title": title_text.strip(),
+                            "Description": description_text.strip(),
+                            "Link":
+                                str(job.find_element(By.CSS_SELECTOR, ".boxButtonslist a:nth-child(2)").get_attribute("href")).split('?')[0],
+                            "Keywords": matched_keywords
+                        }
+                        positive += 1
+
+                        if search_mode == 'gemini' or search_mode == 'openai':
+                            results, match = profile_match(description_text, profile, search_mode)
+                            job_details.update({
+                                "Job-level match": results[0],
+                                "Skills match": results[1],
+                                "Good match": match
+                            })
+                            if match:
+                                good_match += 1
+                            print(f"\n{positive}: {title_text}\nJob-level match: {results[0]}\t Skills match: {results[1]}")
+
+                        jobs.append(job_details)
+
+                        if search_mode == 'basic':
+                            print(f"\n{positive}: {title_text} \n Matched keywords: {matched_keywords}")
+
+                except Exception as e:
+                    print(f"Something went wrong while fetching data: {e}")
+                    pass
+
             try:
-                # Extract job details
-                title_ele = job.find_element(By.CSS_SELECTOR, ".jobs--title")
-                title_text = title_ele.text
-                description_ele = job.find_element(By.CSS_SELECTOR, ".node-content")
-                description_text = description_ele.text
-
-                # Check if job description matches your criteria
-                keywords_True = any(word.lower() in description_text.lower() for word in keywords)
-                excluded_True = all(word.lower() not in title_text.lower() for word in excluded_keywords)
-                language_True = detect(description_text) in languages
-
-                if keywords_True and excluded_True and language_True:
-                    job_details = {
-                        "Title": title_text.strip(),
-                        "Description": description_text.strip(),
-                        "Link":
-                            str(job.find_element(By.CSS_SELECTOR, ".boxButtonslist a:nth-child(2)").get_attribute("href")).split('?')[0]
-                    }
-                    positive += 1
-
-                    if search_mode == 'gemini' or search_mode == 'openai':
-                        results, match = profile_match(description_text, profile, search_mode)
-                        job_details.update({
-                            "Job-level match": results[0],
-                            "Skills match": results[1],
-                            "Good match": match
-                        })
-                        if match:
-                            good_match += 1
-                        print(f"\n{positive}: {title_text}\nJob-level match: {results[0]}\t Skills match: {results[1]}")
-
-                    jobs.append(job_details)
-
-                    if search_mode == 'basic':
-                        print(f"\n{positive}: {title_text}")
-
+                # Navigate to the next page
+                nextpage_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
+                nextpage_button.click()
             except Exception as e:
-                print(f"Something went wrong while fetching data: {e}")
-                pass
+                print(f"Something went wrong while clicking next: {e}")
+                break
 
-        try:
-            # Navigate to the next page
-            nextpage_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.ecl-pagination__item--next')))
-            nextpage_button.click()
-        except Exception as e:
-            print(f"Something went wrong while clicking next: {e}")
-            break
+    finally:
+        filename = f"{search_location}_{search_keyword}_results"
+        save_results(filename, jobs, search_mode)
 
-    filename = f"{search_location}_{search_keyword}_results"
-    save_results(filename, jobs, search_mode)
+        if search_mode == 'basic':
+            print(f"\nFound {positive} jobs with matching keywords in {i_page+1} pages!")
+        else:
+            print(f"\nFound {positive} jobs with matching keywords with {good_match} good matches in {i_page + 1} pages!")
+        # Close the browser and free up resources
+        driver.quit()
 
-    if search_mode == 'basic':
-        print(f"\nFound {positive} jobs with matching keywords in {i_page+1} pages!")
-    else:
-        print(f"\nFound {positive} jobs with matching keywords with {good_match} good matches in {i_page + 1} pages!")
-    # Close the browser and free up resources
-    driver.quit()
-
-    return jobs
+        return jobs
 
 
 def save_results(filename, jobs, mode=None):
@@ -143,14 +150,14 @@ def save_results(filename, jobs, mode=None):
     with open(f"results/{filename}.csv", 'w', newline='', encoding='utf-8') as file:
         csv_writer = csv.writer(file)
 
-        if mode == 'gemini':
-            csv_writer.writerow(["Title", "Job-level match", "Skills match", "Good match", "URL"])
+        if mode == 'gemini' or mode == 'openai':
+            csv_writer.writerow(["Title", "Matched Keywords", "Job-level match", "Skills match", "Good match", "URL"])
             for job in jobs:
-                csv_writer.writerow([job["Title"], job["Job-level match"], job["Skills match"], job["Good match"], f'=HYPERLINK("{job["Link"]}","Link")'])
+                csv_writer.writerow([job["Title"], job["Keywords"], job["Job-level match"], job["Skills match"], job["Good match"], f'=HYPERLINK("{job["Link"]}","Link")'])
         else:
-            csv_writer.writerow(["Title", "URL"])
+            csv_writer.writerow(["Title", "Matched Keywords", "URL"])
             for job in jobs:
-                csv_writer.writerow([job["Title"], f'=HYPERLINK("{job["Link"]}","Link")'])
+                csv_writer.writerow([job["Title"], job["Keywords"], f'=HYPERLINK("{job["Link"]}","Link")'])
 
 
     return
