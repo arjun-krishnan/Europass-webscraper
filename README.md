@@ -11,9 +11,8 @@ Before running the script, make sure to install the required dependencies:
 ```bash
 pip install selenium tqdm langdetect
 ```
-If you want to use the Google Gemini API or OpenAI API for intelligent job filtering, install:
+If you want to use the OpenAI API for intelligent job filtering, install:
 ```bash
-pip install -U google-generativeai
 pip install openai
 ```
 ## Configuration
@@ -27,14 +26,12 @@ To use WebScraper, simply import the **search_jobs** function from the **webscra
 - **languages** : List of languages to filter job ads.
 - **N_pages** : Number of pages to scrape.
 - **show_window** : set to True if you want to see the Chrome window  during the scraping process.
-- **search_mode** : Flag to chose if you want to use the Google Gemini API to fliter the jobs according to your profile. The options are 'basic', 'openai' and 'gemini'.
+- **search_mode** : Flag to chose if you want to use the OpenAI API to fliter the jobs according to your profile. The options are 'basic' and 'openai'.
 
 ## Using Gemini/OpenAI API
 
-- Save your Gemini API key as an environment variable **GEMINI_API_KEY** or OpenAI API key as **OPENAI_API_KEY**.
-- Get the Gemini API key from: https://ai.google.dev/ . It is free to use right now.
+- Save your OpenAI API key as **OPENAI_API_KEY**.
 - Get OpenAI API key from: https://platform.openai.com/
-- For users in Europe, the API access is not yet available. One work around is using a VPN.
 - Modify the *profile.txt* file in the directory to describe your desired job level, skills etc.
 - Don't change the formatting of the text file.
 

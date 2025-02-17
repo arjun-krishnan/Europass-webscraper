@@ -1,3 +1,3 @@
 level : "Entry-level"
-skills : "Python, Deep learning, Machine learning, Computer vision, Matlab, physics informed modelling, accelerator physics"
+skills : "Analytical Laboratory Management Experimental Design — hypothesis validation Scientific Writing —scientific communication UV-Visible Spectroscopy — diffused reflectance Photoluminescence Spectroscopy —Steady-state, Time-resolved, Power dependent Raman Spectroscopy — Low-temperature X-Ray Diffraction, Atomic Force Microscopy Synthetic Chemistry Thin Film Fabrication — spin coating, dip coating, thermal evaporator, spray pyrolysis, doctor blading I-V Characterization — four probe Electron Microscopy, Profilometry Robotic synthesis Software skills — Office, Latex, Origin, MATLAB"
 languages : "English (Advanced)"

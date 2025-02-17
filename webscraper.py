@@ -12,7 +12,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from gemini_gpt_functions import read_profile, profile_match
 from tqdm import tqdm
 import numpy as np
 import time
@@ -23,9 +22,11 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dir_path)
 
-profile = read_profile("profile.txt")
-
 def search_jobs(search_keyword, search_location, keywords, excluded_keywords, languages=['en'], N_pages=10, show_window=False, search_mode='basic'):
+
+    if search_mode == 'openai':
+        from gemini_gpt_functions import read_profile, profile_match
+        profile = read_profile("profile.txt")
 
     # Set up a controllable Chrome instance in headless mode
     service = Service()
@@ -88,7 +89,7 @@ def search_jobs(search_keyword, search_location, keywords, excluded_keywords, la
                         }
                         positive += 1
 
-                        if search_mode == 'gemini' or search_mode == 'openai':
+                        if search_mode == 'openai':
                             results, match = profile_match(description_text, profile, search_mode)
                             job_details.update({
                                 "Job-level match": results[0],
